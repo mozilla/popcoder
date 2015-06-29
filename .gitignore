@@ -58,3 +58,11 @@ target/
 
 # Videos
 *.mp4
+
+# Images
+*.gif
+*.png
+*.jpg
+
+# OSX
+.DS_Store
