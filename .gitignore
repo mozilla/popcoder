@@ -66,3 +66,6 @@ target/
 
 # OSX
 .DS_Store
+
+# misc
+loop.txt
