@@ -6,9 +6,13 @@ class Editor:
     def __init__(self, ffmpeg_path='ffmpeg'):
         self.ffmpeg_path = ffmpeg_path
 
-    def trim(self, video_name, start, duration, out):
+    def trim(self, video_name, out, start, duration):
         """
         Trims a clip to be duration starting at start
+        @param video_name : name of the input video
+        @param out : name of the output video
+        @param start : starting position after the trim
+        @param duration : duration of video after start
         """
         call(['ffmpeg', '-ss', start, '-i', video_name, '-t', duration, out])
 
@@ -34,23 +38,42 @@ class Editor:
               '-map', '[outa]',
               out])
 
+    def draw_video(self, underlay, overlay, out, start, end, x, y, w, h):
+        """
+        Draws one video over another
+        @param underlay : video file on bottom
+        @param overlay : video file to render on top
+        @param out : output file
+        @param start : starting position of overlay
+        @param end : end position of overlay
+        @param x : x position of overlay
+        @param y : y position of overlay
+        @param w : width of overlay
+        @param h : height of overlay
+        """
+        cfilter = (r"overlay=x={0}:y={1}:overlay_w={3}:overlay_h={4}:"
+                   r"enable='betweem(t,{5},{6})'")\
+            .format(x, y, w, h, start, end)
+        call(['ffmpeg', '-i', underlay, '-i', overlay,
+              '-filter_complex', cfilter, out])
+
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='#FFFFFF', show_background=0,
                   background_color='#000000'):
         """
-        Draws text over a video
-        @param video_name : name of video input file
-        @param out : name of video output file
-        @param start : start timecode to draw text hh:mm:ss
-        @param end : end timecode to draw text hh:mm:ss
-        @param text : text content to draw
-        @param x : x position of text (px)
-        @param y : y position of text (px)
-        @param color : text color
-        @param show_background : boolean to show a background box behind the
-                                 text
-        @param background_color : color of background box
-        """
+         Draws text over a video
+         @param video_name : name of video input file
+         @param out : name of video output file
+         @param start : start timecode to draw text hh:mm:ss
+         @param end : end timecode to draw text hh:mm:ss
+         @param x : x position of text (px)
+         @param y : y position of text (px)
+         @param text : text content to draw
+         @param color : text color
+         @param show_background : boolean to show a background box behind the
+                                  text
+         @param background_color : color of background box
+         """
         cfilter = (r"drawtext=fontfile=/Library/Fonts/AppleGothic.ttf: "
                    r"x={x}: y={y}: fontcolor={font_color}:"
                    r"box={show_background}: "
@@ -78,7 +101,7 @@ class Editor:
             .format(x=x, y=y, start=start, end=end)
 
         call(['ffmpeg', '-i', video_name, '-i', image_name,
-             '-filter_complex', cfilter, out])
+              '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
         """
