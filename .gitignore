@@ -58,6 +58,9 @@ target/
 
 # Videos
 *.mp4
+*.webm
+*.nut
+media/
 
 # Images
 *.gif
