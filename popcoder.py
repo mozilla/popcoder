@@ -1,29 +1,13 @@
-from subprocess import call
+import json
 
-
+from video import Video
 
 
 class Popcoder:
 
-
-
-        # Open text file it and write the loop clip  n times
-        with open('loop.txt', 'w') as f:
-            for i in range(1, iterations):
-                line = 'file {0}\n'.format(loop_section)
-                f.write(line)
-
-        # concat the loop clip upon itself n times
-        call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt',
-              '-c', 'copy', loops])
-
-        # concat the beginning clip, combo of loops, and end clip
-        cfilter = (r"[0:0] [0:1] [1:0] [1:1] [2:0] [2:1]"
-                   r"concat=n=3:v=1:a=1 [v] [a1]")
-        call(['ffmpeg', '-i', beginning, '-i', loops, '-i', end,
-              '-filter_complex', cfilter,
-              '-map', '[v]', '-map', '[a1]', out])
+    def process_popcorn(self, data, background_color='#000000'):
+        video = Video(data, background_color)
+        video.process()
 
 
 if __name__ == '__main__':
@@ -36,3 +20,9 @@ if __name__ == '__main__':
     # popcoder.draw_image('big.mp4', 'cat.gif', 'draw_image.mp4', 10, 50, 100,
     #                     100)
     # popcoder.loop('big.mp4', 'looped.mp4', '00:00:05', '3', 10, '00:18:16.24')
+
+    data = None
+    with open('popcorn.json', 'r') as f:
+        data = json.loads(f.read())
+
+    popcoder.process_popcorn(data['data'], data['background'])

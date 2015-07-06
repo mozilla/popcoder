@@ -51,8 +51,8 @@ class Editor:
         @param w : width of overlay
         @param h : height of overlay
         """
-        cfilter = (r"overlay=x={0}:y={1}:overlay_w={3}:overlay_h={4}:"
-                   r"enable='betweem(t,{5},{6})'")\
+        cfilter = (r"overlay=x={0}:y={1}:"
+                   r"enable='between(t,{4},{5})'")\
             .format(x, y, w, h, start, end)
         call(['ffmpeg', '-i', underlay, '-i', overlay,
               '-filter_complex', cfilter, out])
@@ -84,6 +84,10 @@ class Editor:
                     background_color=background_color, text=text, start=start,
                     end=end)
         call(['ffmpeg', '-i', video_name, '-vf', cfilter,  '-an', '-y', out])
+
+    def scale_video(self, video_name, out, width, height):
+        scale = "scale={0}:{1}".format(width, height)
+        call(['ffmpeg', '-i', video_name, '-vf', scale, out])
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
         """
