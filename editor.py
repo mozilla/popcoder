@@ -14,7 +14,6 @@ class Editor:
         @param start : starting position after the trim
         @param duration : duration of video after start
         """
-        print " ".join(['ffmpeg', '-c:v', 'ffvhuff' '-ss', start, '-i', video_name, '-t', duration, out])
         call(['ffmpeg', '-ss', start, '-i', video_name, '-t', duration, out])
 
     def skip(self, video_name, start, duration, out):
@@ -35,7 +34,6 @@ class Editor:
 
         call(['ffmpeg', '-i', video_name,
               '-filter_complex', cfilter,
-              '-c:v', 'h264', '-qp', '0',
               '-map', '[outv]',
               '-map', '[outa]',
               out])
@@ -55,7 +53,6 @@ class Editor:
         """
         cfilter = r"overlay=x={0}:y={1}:".format(x, y)
         call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'h264', '-qp', '0',
               '-filter_complex', cfilter, out])
 
     def draw_text(self, video_name, out, start, end, x, y, text,
@@ -84,11 +81,11 @@ class Editor:
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
                     end=end)
-        call(['ffmpeg', '-i', '-c:v', 'h264', '-qp', '0', video_name, '-vf', cfilter,  '-an', '-y', out])
+        call(['ffmpeg', '-i', video_name, '-vf', cfilter,  '-an', '-y', out])
 
     def scale_video(self, video_name, out, width, height):
         scale = "scale={0}:{1}".format(width, height)
-        call(['ffmpeg', '-i', video_name, '-c:v', 'h264', '-qp', '0','-vf', scale, out])
+        call(['ffmpeg', '-i', video_name, '-vf', scale, out])
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
         """
@@ -105,7 +102,7 @@ class Editor:
                    "enable='between(t, {start}, {end}')")\
             .format(x=x, y=y, start=start, end=end)
 
-        call(['ffmpeg', '-i', video_name, '-i', image_name, '-c:v', 'h264', '-qp', '0',
+        call(['ffmpeg', '-i', video_name, '-i', image_name,
               '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
@@ -136,7 +133,7 @@ class Editor:
         # concat the loop clip upon itself n times
         call(['ffmpeg', '-f', 'concat',
               '-i', 'loop.txt',
-              '-c', 'h264', '-qp', '0', loops])
+              '-c', 'copy', loops])
 
         # concat the beginning clip, combo of loops, and end clip
         cfilter = (r"[0:0] [0:1] [1:0] [1:1] [2:0] [2:1]"

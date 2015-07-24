@@ -55,6 +55,7 @@ class Video:
                 )
 
 
+                # Also scale the video down to size
                 if not video.options['height'] == 100 or True:
                     scaled_overlay = 'scaled_' + str(i) + '.avi'
                     self.editor.scale_video(
@@ -66,13 +67,13 @@ class Video:
                 else:
                     scaled_overlay = overlay
 
-                out = 'video_' + str(i) + '.avi'
+            out = 'video_' + str(i) + '.avi'
 
-                self.overlay_videos(self.video_name, scaled_overlay,
-                                    video.options, out)
+            self.overlay_videos(self.video_name, scaled_overlay,
+                                video.options, out)
 
-                self.video_name = out
-                i += 1
+            self.video_name = out
+            i += 1
 
     def overlay_videos(self, underlay_video, overlay_video, options, out):
         self.editor.trim(
