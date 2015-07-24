@@ -26,7 +26,7 @@ class Video:
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.video_name = 'blank.nut'
+        self.video_name = 'blank.avi'
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -45,7 +45,7 @@ class Video:
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
 
-                overlay = 'trimmed_' + str(i) + '.nut'
+                overlay = 'trimmed_' + str(i) + '.avi'
 
                 self.editor.trim(
                     video.options['title'],
@@ -54,32 +54,67 @@ class Video:
                     seconds_to_timecode(video.options['duration'])
                 )
 
-                scaled_overlay = 'scaled_' + str(i) + '.nut'
 
-                self.editor.scale_video(
-                    overlay,
-                    scaled_overlay,
-                    percent_to_px(video.options['width'], self.size[0]),
-                    percent_to_px(video.options['height'], self.size[1]),
-                )
+                if not video.options['height'] == 100 or True:
+                    scaled_overlay = 'scaled_' + str(i) + '.avi'
+                    self.editor.scale_video(
+                        overlay,
+                        scaled_overlay,
+                        percent_to_px(video.options['width'], self.size[0]),
+                        percent_to_px(video.options['height'], self.size[1]),
+                    )
+                else:
+                    scaled_overlay = overlay
 
-                out = 'video_' + str(i) + '.nut'
+                out = 'video_' + str(i) + '.avi'
 
-                # Now draw it onto the screen
-                self.editor.draw_video(
-                    self.video_name,
-                    scaled_overlay,
-                    out,
-                    video.options['start'],
-                    video.options['end'],
-                    percent_to_px(video.options['left'], self.size[0]),
-                    percent_to_px(video.options['top'], self.size[1]),
-                    video.options['width'],
-                    video.options['height']
-                )
+                self.overlay_videos(self.video_name, scaled_overlay,
+                                    video.options, out)
 
                 self.video_name = out
                 i += 1
+
+    def overlay_videos(self, underlay_video, overlay_video, options, out):
+        self.editor.trim(
+            underlay_video,
+            'overlay_1.avi',
+            '00:00:00',
+            str(options['start'])
+        )
+
+        self.editor.trim(
+            underlay_video,
+            'overlay_2.avi',
+            str(options['start']),
+            str(options['end'] - options['start']),
+        )
+
+        self.editor.trim(
+            underlay_video,
+            'overlay_3.avi',
+            str(options['end'] - options['start']),
+            str(options['end'])
+        )
+
+        # Now draw it onto the screen
+        self.editor.draw_video(
+            'overlay_2.avi',
+            overlay_video,
+            'overlay_4.avi',
+            percent_to_px(options['left'], self.size[0]),
+            percent_to_px(options['top'], self.size[1])
+        )
+
+        with open('loop.txt', 'w') as f:
+            if not options['start'] == 0:
+                f.write('file overlay_1.avi\n')
+            f.write('file overlay_4.avi\n')
+            if not options['start'] == 0:
+                f.write('file overlay_3.avi\n')
+
+        call(['ffmpeg', '-f', 'concat',
+              '-i', 'loop.txt',
+              '-c', 'copy', out])
 
     def draw_edits(self):
         i = 0
@@ -91,8 +126,8 @@ class Video:
 
             if edit.edit_type == 'text':
                 self.editor.draw_text(
-                    name + '.nut',
-                    'edit_' + str(++i) + '.nut',
+                    name + '.avi',
+                    'edit_' + str(++i) + '.avi',
                     edit.options['start_stamp'],
                     edit.options['end_stamp'],
                     edit.options['x_px'],
