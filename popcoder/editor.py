@@ -1,3 +1,4 @@
+import math
 from subprocess import call
 
 
@@ -15,7 +16,7 @@ class Editor:
         @param duration : duration of video after start
         """
         call(['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
-              '-t', duration, out])
+              '-preset', 'veryslow', '-t', duration, out])
 
     def skip(self, video_name, start, duration, out):
         """
@@ -36,7 +37,7 @@ class Editor:
         call(['ffmpeg', '-i', video_name,
               '-filter_complex', cfilter,
               '-map', '[outv]',
-              '-map', '[outa]','-c:v', 'huffyuv',
+              '-map', '[outa]','-c:v', 'huffyuv', '-preset', 'veryslow',
               out])
 
     def draw_video(self, underlay, overlay, out, x, y):
@@ -54,7 +55,8 @@ class Editor:
         """
         cfilter = r"overlay=x={0}:y={1}:".format(x, y)
         call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'huffyuv', '-filter_complex', cfilter, out])
+              '-c:v', 'huffyuv', '-preset', 'veryslow',
+              '-filter_complex', cfilter, out])
 
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='#FFFFFF', show_background=0,
@@ -82,11 +84,22 @@ class Editor:
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
                     end=end)
-        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-vf', cfilter,  '-an', '-y', out])
+        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
+              'veryslow', '-vf', cfilter,  '-an', '-y', out])
 
     def scale_video(self, video_name, out, width, height):
+        # Lossless video codecs can't scale videos with uneven width
+        width = int(width)
+        if width % 2 != 0:
+            width = math.floor(width + 1)
+        else:
+            width = math.floor(width)
+
         scale = "scale={0}:{1}".format(width, height)
-        call(['ffmpeg', '-i', video_name, '-vf', scale, out])
+        command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
+                   'veryslow', '-vf', scale, out]
+
+        call(command)
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
         """
@@ -104,7 +117,7 @@ class Editor:
             .format(x=x, y=y, start=start, end=end)
 
         call(['ffmpeg', '-i', video_name, '-i', image_name,'-c:v', 'huffyuv',
-              '-filter_complex', cfilter, out])
+              '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
         """
