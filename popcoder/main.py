@@ -1,4 +1,5 @@
 import json
+import sys
 
 from video import Video
 
@@ -10,7 +11,7 @@ class Popcoder:
         video.process()
 
 
-if __name__ == '__main__':
+def main():
     popcoder = Popcoder()
 
     # popcoder.trim('big.mp4', '00:01:00', '00:02:00', 'trim.mp4')
@@ -26,3 +27,7 @@ if __name__ == '__main__':
         data = json.loads(f.read())
 
     popcoder.process_popcorn(data['data'], data['background'])
+
+
+if __name__ == '__main__':
+    sys.exit(main() or 0)
