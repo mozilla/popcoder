@@ -8,15 +8,24 @@ sudo: no
 language: python
 
 python:
-    - 2.6
-    - 2.7
+  - 2.6
+  - 2.7
 
 # Hmm...???
 # https://github.com/phaux/node-ffmpeg-stream/blob/master/.travis.yml
 
 script:
-    - python setup.py test
+  - python setup.py test
 
 notifications:
-    irc:
-        channels: "irc.mozilla.org#airmozilla-dev"
+  irc:
+    channels: "irc.mozilla.org#airmozilla-dev"
+
+deploy:
+  provider: pypi
+  user: peterbe
+  password:
+    secure: N4eEiY/L+LeGDaCw7EowDAohUr////qB5LR8vIFvrt21/K2f258LeBJIYSbUWsuHacjCT6PFRSeH7lK5/L+QChDdlCb3z5ctzpPxd5ga65HTpHgGJzgqY/8A85$
+  on:
+    repo: mozilla/popcoder
+  distributions: "sdist bdist_wheel"
