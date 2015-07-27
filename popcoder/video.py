@@ -2,6 +2,7 @@ import urllib
 
 from subprocess import call
 from collections import namedtuple
+from tempfile import NamedTemporaryFile
 
 from editor import Editor
 from util import seconds_to_timecode, percent_to_px
@@ -26,7 +27,7 @@ class Video:
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.video_name = 'blank.avi'
+        self.current_video = NamedTemporaryFile(suffix='.avi')
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -36,6 +37,7 @@ class Video:
 
     def process(self):
         self.draw_videos()
+        call(['cp', self.current_video.name, 'out.avi'])
 
     def draw_videos(self):
         i = 0
@@ -45,90 +47,96 @@ class Video:
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
 
-                overlay = 'trimmed_' + str(i) + '.avi'
+                overlay = NamedTemporaryFile(suffix='.avi')
 
                 self.editor.trim(
                     video.options['title'],
-                    overlay,
+                    overlay.name,
                     seconds_to_timecode(video.options['from']),
                     seconds_to_timecode(video.options['duration'])
                 )
 
-
                 # Also scale the video down to size
                 if not video.options['height'] == 100 or True:
-                    scaled_overlay = 'scaled_' + str(i) + '.avi'
+                    scaled_overlay = NamedTemporaryFile(suffix='.avi')
                     self.editor.scale_video(
-                        overlay,
-                        scaled_overlay,
+                        overlay.name,
+                        scaled_overlay.name,
                         percent_to_px(video.options['width'], self.size[0]),
                         percent_to_px(video.options['height'], self.size[1]),
                     )
+                    overlay.close()
                 else:
                     scaled_overlay = overlay
 
-            out = 'video_' + str(i) + '.avi'
+            out = NamedTemporaryFile(suffix='.avi')
 
-            self.overlay_videos(self.video_name, scaled_overlay,
-                                video.options, out)
+            self.overlay_videos(self.current_video.name, scaled_overlay.name,
+                                video.options, out.name)
+            scaled_overlay.close()
 
-            self.video_name = out
+            self.current_video = out
             i += 1
 
     def overlay_videos(self, underlay_video, overlay_video, options, out):
+        overlay1 = NamedTemporaryFile(suffix='.avi')
+        overlay2 = NamedTemporaryFile(suffix='.avi')
+        overlay3 = NamedTemporaryFile(suffix='.avi')
+        overlay4 = NamedTemporaryFile(suffix='.avi')
+
         self.editor.trim(
             underlay_video,
-            'overlay_1.avi',
+            overlay1.name,
             '00:00:00',
             str(options['start'])
         )
 
         self.editor.trim(
             underlay_video,
-            'overlay_2.avi',
+            overlay2.name,
             str(options['start']),
             str(options['end'] - options['start']),
         )
 
         self.editor.trim(
             underlay_video,
-            'overlay_3.avi',
+            overlay3.name,
             str(options['end'] - options['start']),
             str(options['end'])
         )
 
         # Now draw it onto the screen
         self.editor.draw_video(
-            'overlay_2.avi',
+            overlay2.name,
             overlay_video,
-            'overlay_4.avi',
+            overlay4.name,
             percent_to_px(options['left'], self.size[0]),
             percent_to_px(options['top'], self.size[1])
         )
 
         with open('loop.txt', 'w') as f:
             if not options['start'] == 0:
-                f.write('file overlay_1.avi\n')
-            f.write('file overlay_4.avi\n')
+                f.write('file {0}\n'.format(overlay1.name))
+            f.write('file {0}\n'.format(overlay4.name))
             if not options['start'] == 0:
-                f.write('file overlay_3.avi\n')
+                f.write('file {0}\n'.format(overlay3.name))
 
         call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt',
+              '-i', 'loop.txt', '-y',
               '-c', 'copy', out])
 
-    def draw_edits(self):
-        i = 0
-        for edit in self.track_edits:
-            if i == 0:
-                name = self.video_name
-            else:
-                name = str(i)
+        overlay1.close()
+        overlay2.close()
+        overlay3.close()
+        overlay4.close()
 
+    def draw_edits(self):
+        for edit in self.track_edits:
+            edit_file = NamedTemporaryFile(suffix='.avi')
             if edit.edit_type == 'text':
                 self.editor.draw_text(
-                    name + '.avi',
-                    'edit_' + str(++i) + '.avi',
+                    self.current_video.name,
+                    edit_file.name,
                     edit.options['start_stamp'],
                     edit.options['end_stamp'],
                     edit.options['x_px'],
@@ -191,7 +199,8 @@ class Video:
             self.size[1],
             self.duration
         )
-        call(['ffmpeg', '-filter_complex', cfilter, self.video_name])
+        call(['ffmpeg', '-filter_complex', cfilter, '-y',
+              self.current_video.name])
 
     def parse_duration(self):
         """

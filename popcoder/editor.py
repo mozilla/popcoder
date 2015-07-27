@@ -15,8 +15,9 @@ class Editor:
         @param start : starting position after the trim
         @param duration : duration of video after start
         """
-        call(['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
-              '-preset', 'veryslow', '-t', duration, out])
+        command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
+              '-y', '-preset', 'veryslow', '-t', duration, out]
+        call(command)
 
     def skip(self, video_name, start, duration, out):
         """
@@ -35,7 +36,7 @@ class Editor:
             .replace(' ', '')
 
         call(['ffmpeg', '-i', video_name,
-              '-filter_complex', cfilter,
+              '-filter_complex', cfilter, '-y',
               '-map', '[outv]',
               '-map', '[outa]','-c:v', 'huffyuv', '-preset', 'veryslow',
               out])
@@ -55,7 +56,7 @@ class Editor:
         """
         cfilter = r"overlay=x={0}:y={1}:".format(x, y)
         call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'huffyuv', '-preset', 'veryslow',
+              '-c:v', 'huffyuv', '-preset', 'veryslow', '-y',
               '-filter_complex', cfilter, out])
 
     def draw_text(self, video_name, out, start, end, x, y, text,
@@ -84,7 +85,7 @@ class Editor:
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
                     end=end)
-        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
+        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset', '-y',
               'veryslow', '-vf', cfilter,  '-an', '-y', out])
 
     def scale_video(self, video_name, out, width, height):
@@ -97,7 +98,7 @@ class Editor:
 
         scale = "scale={0}:{1}".format(width, height)
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
-                   'veryslow', '-vf', scale, out]
+                   'veryslow', '-y', '-vf', scale, out]
 
         call(command)
 
@@ -117,7 +118,7 @@ class Editor:
             .format(x=x, y=y, start=start, end=end)
 
         call(['ffmpeg', '-i', video_name, '-i', image_name,'-c:v', 'huffyuv',
-              '-preset', 'veryslow', '-filter_complex', cfilter, out])
+              '-y', '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
         """
@@ -146,12 +147,12 @@ class Editor:
 
         # concat the loop clip upon itself n times
         call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt',
+              '-i', 'loop.txt', '-y',
               '-c', 'copy', loops])
 
         # concat the beginning clip, combo of loops, and end clip
         cfilter = (r"[0:0] [0:1] [1:0] [1:1] [2:0] [2:1]"
                    r"concat=n=3:v=1:a=1 [v] [a1]")
         call(['ffmpeg', '-i', beginning, '-i', loops, '-i', end,
-              '-filter_complex', cfilter,
+              '-filter_complex', cfilter, '-y',
               '-map', '[v]', '-map', '[a1]', out])
