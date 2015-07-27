@@ -14,7 +14,8 @@ class Editor:
         @param start : starting position after the trim
         @param duration : duration of video after start
         """
-        call(['ffmpeg', '-ss', start, '-i', video_name, '-t', duration, out])
+        call(['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
+              '-t', duration, out])
 
     def skip(self, video_name, start, duration, out):
         """
@@ -35,7 +36,7 @@ class Editor:
         call(['ffmpeg', '-i', video_name,
               '-filter_complex', cfilter,
               '-map', '[outv]',
-              '-map', '[outa]',
+              '-map', '[outa]','-c:v', 'huffyuv',
               out])
 
     def draw_video(self, underlay, overlay, out, x, y):
@@ -53,7 +54,7 @@ class Editor:
         """
         cfilter = r"overlay=x={0}:y={1}:".format(x, y)
         call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-filter_complex', cfilter, out])
+              '-c:v', 'huffyuv', '-filter_complex', cfilter, out])
 
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='#FFFFFF', show_background=0,
@@ -81,7 +82,7 @@ class Editor:
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
                     end=end)
-        call(['ffmpeg', '-i', video_name, '-vf', cfilter,  '-an', '-y', out])
+        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-vf', cfilter,  '-an', '-y', out])
 
     def scale_video(self, video_name, out, width, height):
         scale = "scale={0}:{1}".format(width, height)
@@ -102,7 +103,7 @@ class Editor:
                    "enable='between(t, {start}, {end}')")\
             .format(x=x, y=y, start=start, end=end)
 
-        call(['ffmpeg', '-i', video_name, '-i', image_name,
+        call(['ffmpeg', '-i', video_name, '-i', image_name,'-c:v', 'huffyuv',
               '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
