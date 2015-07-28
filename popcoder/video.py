@@ -27,7 +27,7 @@ class Video:
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.current_video = NamedTemporaryFile(suffix='.nut')
+        self.current_video = NamedTemporaryFile(suffix='.avi')
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -37,7 +37,7 @@ class Video:
 
     def process(self):
         self.draw_videos()
-        call(['cp', self.current_video.name, 'out.avi'])
+        call(['ffmpeg', '-i', self.current_video.name, 'out.webm'])
 
     def draw_videos(self):
         i = 0

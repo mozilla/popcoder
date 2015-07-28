@@ -28,6 +28,5 @@ def main():
 
     popcoder.process_popcorn(data['data'], data['background'])
 
-
 if __name__ == '__main__':
     sys.exit(main() or 0)

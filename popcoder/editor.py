@@ -1,4 +1,3 @@
-import math
 from subprocess import call
 
 
@@ -95,15 +94,11 @@ class Editor:
         # Lossless video codecs can't scale videos with uneven width
         width = int(width)
         if width % 2 != 0:
-            width = math.floor(width + 1)
-        else:
-            width = math.floor(width)
+            width += 1
 
         scale = "scale={0}:{1}".format(width, height)
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
                    'veryslow', '-y', '-vf', scale, out]
-
-        call(['ffmpeg', '-i', video_name])
         call(command)
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
