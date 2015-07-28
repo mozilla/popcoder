@@ -27,7 +27,7 @@ class Video:
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.current_video = NamedTemporaryFile(suffix='.avi')
+        self.current_video = NamedTemporaryFile(suffix='.nut')
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -193,11 +193,12 @@ class Video:
 
         self.parse_duration()
 
-        cfilter = r'color=c={0}:s={1}x{2}:d={3}'.format(
+        cfilter = r'color=c={0}:s={1}x{2}:d={3};aevalsrc=0:d={4}'.format(
             self.background_color,
             self.size[0],
             self.size[1],
-            self.duration
+            self.duration,
+            self.duration,
         )
         call(['ffmpeg', '-filter_complex', cfilter, '-y',
               self.current_video.name])

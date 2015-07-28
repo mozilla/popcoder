@@ -54,10 +54,13 @@ class Editor:
         @param w : width of overlay
         @param h : height of overlay
         """
-        cfilter = r"overlay=x={0}:y={1}:".format(x, y)
-        call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'huffyuv', '-preset', 'veryslow', '-y',
-              '-filter_complex', cfilter, out])
+        cfilter = r"[0:1][1:1]amerge=inputs=2[aout];overlay=x={0}:y={1}"\
+            .format(x, y)
+        command = ['ffmpeg', '-i', underlay, '-i', overlay,
+              '-c:v', 'huffyuv',
+              '-preset', 'veryslow', '-y',
+              '-filter_complex', cfilter, '-map', '[aout]', out]
+        call(command)
 
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='#FFFFFF', show_background=0,
@@ -100,6 +103,7 @@ class Editor:
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
                    'veryslow', '-y', '-vf', scale, out]
 
+        call(['ffmpeg', '-i', video_name])
         call(command)
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
