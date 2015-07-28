@@ -24,10 +24,12 @@ class Video:
         Constructor
         @param data : The popcorn editor project json blob
         """
+        self.DELETE_VIDEOS = True
+
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.current_video = NamedTemporaryFile(suffix='.avi')
+        self.current_video = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -47,10 +49,10 @@ class Video:
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
 
-                overlay = NamedTemporaryFile(suffix='.avi')
+                overlay = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
 
                 self.editor.trim(
-                    video.options['title'],
+                    video.options['title'].replace(' ', '-') + '.webm',
                     overlay.name,
                     seconds_to_timecode(video.options['from']),
                     seconds_to_timecode(video.options['duration'])
@@ -58,7 +60,7 @@ class Video:
 
                 # Also scale the video down to size
                 if not video.options['height'] == 100 or True:
-                    scaled_overlay = NamedTemporaryFile(suffix='.avi')
+                    scaled_overlay = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
                     self.editor.scale_video(
                         overlay.name,
                         scaled_overlay.name,
@@ -69,7 +71,7 @@ class Video:
                 else:
                     scaled_overlay = overlay
 
-            out = NamedTemporaryFile(suffix='.avi')
+            out = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
 
             self.overlay_videos(self.current_video.name, scaled_overlay.name,
                                 video.options, out.name)
@@ -79,10 +81,10 @@ class Video:
             i += 1
 
     def overlay_videos(self, underlay_video, overlay_video, options, out):
-        overlay1 = NamedTemporaryFile(suffix='.avi')
-        overlay2 = NamedTemporaryFile(suffix='.avi')
-        overlay3 = NamedTemporaryFile(suffix='.avi')
-        overlay4 = NamedTemporaryFile(suffix='.avi')
+        overlay1 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay2 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay3 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay4 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
 
         self.editor.trim(
             underlay_video,
@@ -121,18 +123,13 @@ class Video:
             if not options['start'] == 0:
                 f.write('file {0}\n'.format(overlay3.name))
 
-        call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt', '-y',
-              '-c', 'copy', out])
-
-        overlay1.close()
-        overlay2.close()
-        overlay3.close()
-        overlay4.close()
+        command = ['ffmpeg', '-f', 'concat', '-i', 'loop.txt', '-y',
+                   '-c', 'copy', out]
+        call(command)
 
     def draw_edits(self):
         for edit in self.track_edits:
-            edit_file = NamedTemporaryFile(suffix='.avi')
+            edit_file = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
             if edit.edit_type == 'text':
                 self.editor.draw_text(
                     self.current_video.name,
@@ -147,6 +144,7 @@ class Video:
             elif edit.edit_type == 'image':
                 # TODO
                 pass
+            self.current_video = edit_file
 
     def preprocess(self, data):
         """
@@ -156,6 +154,7 @@ class Video:
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
             print 'Downloading {0}.'.format(url)
+            video['title'] = video['title'].replace(' ', '-') + '.webm'
             urllib.urlretrieve(url, video['title'])
             print 'Finished download!'
         print 'All videos downloaded.'
