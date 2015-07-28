@@ -57,8 +57,12 @@ class Editor:
             .format(x, y)
         command = ['ffmpeg', '-i', underlay, '-i', overlay,
               '-c:v', 'huffyuv',
-              '-preset', 'veryslow', '-y',
+              '-y',
+              # Manually set the color space because other wise you'll have
+              # some trippy looking overlays
+              '-pix_fmt', 'yuv422p',
               '-filter_complex', cfilter, '-map', '[aout]', out]
+
         call(command)
 
     def draw_text(self, video_name, out, start, end, x, y, text,

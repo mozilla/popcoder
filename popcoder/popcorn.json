@@ -2,7 +2,7 @@
     "template": "basic",
     "author": "TODO",
     "thumbnail": "http://localhost:8080/resources/icons/fb-logo.png",
-    "background": "#05c900",
+    "background": "#FFFFFF",
     "data": {
         "targets": [{
             "id": "Target0",
@@ -12,96 +12,128 @@
         "media": [{
             "id": "Media0",
             "name": "Media0",
-            "url": "#t=,23.369",
+            "url": "#t=,51.505302662471365",
             "target": "video",
-            "duration": 23.369,
+            "duration": 51.505302662471365,
             "popcornOptions": {
                 "frameAnimation": true
             },
             "controls": true,
             "tracks": [{
                 "name": "",
-                "id": "0",
-                "order": 0,
-                "trackEvents": [{
-                    "id": "TrackEvent0",
-                    "type": "sequencer",
-                    "popcornOptions": {
-                        "start": 0,
-                        "source": ["https://air-mozilla-uploads-prod.s3.amazonaws.com/2015/06/26/5-acbd1-183233.webm"],
-                        "fallback": "",
-                        "denied": false,
-                        "end": 23.369,
-                        "from": 0,
-                        "title": "Safari Browsing",
-                        "type": "AirMozilla",
-                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/9f/ff/9fff395105bf200cd23a5f6f2f6df520.png",
-                        "duration": 23.369,
-                        "linkback": "",
-                        "contentType": "",
-                        "hidden": false,
-                        "target": "video-container",
-                        "left": 16.29148527836351,
-                        "top": 0,
-                        "width": 73.09152854617142,
-                        "height": 100,
-                        "volume": 100,
-                        "mute": false,
-                        "zindex": 1000,
-                        "id": "TrackEvent0"
-                    },
-                    "track": "0",
-                    "name": "TrackEvent0"
-                }]
-            }, {
-                "name": "",
                 "id": "2",
-                "order": 1,
+                "order": 0,
                 "trackEvents": [{
                     "id": "TrackEvent1",
                     "type": "sequencer",
                     "popcornOptions": {
-                        "start": 6.827133479212254,
-                        "source": ["https://d3fenhwk93s16g.cloudfront.net/m4u2k6/hd_webm.webm?t=1436213481559ae0e916b16&butteruid=1436213446271"],
+                        "start": 23.71887732310484,
+                        "source": ["https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm?butteruid=1438114632383"],
                         "fallback": "",
                         "denied": false,
-                        "end": 16.027133479212253,
+                        "end": 51.505302662471365,
                         "from": 0,
-                        "title": "Testing my face",
+                        "title": "Hello from Ritu K",
                         "type": "AirMozilla",
-                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/ef/55/ef555f851da046f5bcb833fb679654fd.png",
-                        "duration": 9.2,
+                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/70/2b/702ba30e10cf9af1a464e818e5844e6c.png",
+                        "duration": 55.466,
                         "linkback": "",
                         "contentType": "",
                         "hidden": false,
                         "target": "video-container",
-                        "left": 24.058526495858025,
+                        "left": 25.207771140170564,
                         "top": 0,
-                        "width": 75.84346862697606,
-                        "height": 75.92954990215264,
+                        "width": 74.8527701978864,
+                        "height": 100,
                         "volume": 100,
                         "mute": false,
-                        "zindex": 999,
+                        "zindex": 1000,
                         "id": "TrackEvent1"
                     },
                     "track": "2",
                     "name": "TrackEvent1"
                 }]
+            }, {
+                "name": "",
+                "id": "0",
+                "order": 1,
+                "trackEvents": [{
+                    "id": "TrackEvent0",
+                    "type": "sequencer",
+                    "popcornOptions": {
+                        "start": 8.115679995017334,
+                        "source": ["https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm?butteruid=1438114632382"],
+                        "fallback": "",
+                        "denied": false,
+                        "end": 25.30983848196969,
+                        "from": 0,
+                        "title": "Hello from Nan",
+                        "type": "AirMozilla",
+                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/ac/8a/ac8a076ee50a78d5d86544c258ecaec6.png",
+                        "duration": 34.433,
+                        "linkback": "",
+                        "contentType": "",
+                        "hidden": false,
+                        "target": "video-container",
+                        "left": 0,
+                        "top": 0,
+                        "width": 75.73339102374388,
+                        "height": 100,
+                        "volume": 100,
+                        "mute": false,
+                        "zindex": 999,
+                        "id": "TrackEvent0"
+                    },
+                    "track": "0",
+                    "name": "TrackEvent0"
+                }, {
+                    "id": "TrackEvent2",
+                    "type": "text",
+                    "popcornOptions": {
+                        "start": 0,
+                        "end": 8.02619,
+                        "target": "video-container",
+                        "text": "This is a test",
+                        "linkUrl": "",
+                        "linkTarget": "_blank",
+                        "position": "custom",
+                        "alignment": "left",
+                        "transition": "popcorn-fade",
+                        "fontFamily": "Open Sans",
+                        "fontSize": 10,
+                        "fontColor": "#000000",
+                        "shadow": false,
+                        "shadowColor": "#444444",
+                        "background": false,
+                        "backgroundColor": "#888888",
+                        "fontDecorations": {
+                            "bold": false,
+                            "italics": false
+                        },
+                        "left": 31.700515552055908,
+                        "top": 44.81409001956947,
+                        "width": 32.693048159959204,
+                        "zindex": 999,
+                        "id": "TrackEvent2"
+                    },
+                    "track": "0",
+                    "name": "TrackEvent2"
+                }]
             }],
             "clipData": {
-                "https://air-mozilla-uploads-prod.s3.amazonaws.com/2015/06/26/5-acbd1-183233.webm": {
+                "https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm": {
                     "type": "AirMozilla",
-                    "title": "Safari Browsing",
-                    "source": "https://air-mozilla-uploads-prod.s3.amazonaws.com/2015/06/26/5-acbd1-183233.webm",
-                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/9f/ff/9fff395105bf200cd23a5f6f2f6df520.png",
-                    "duration": 23.369
+                    "title": "Hello from Nan",
+                    "source": "https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm",
+                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/ac/8a/ac8a076ee50a78d5d86544c258ecaec6.png",
+                    "duration": 34.433
                 },
-                "https://d3fenhwk93s16g.cloudfront.net/m4u2k6/hd_webm.webm?t=1436213481559ae0e916b16": {
+                "https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm": {
                     "type": "AirMozilla",
-                    "title": "Testing my face",
-                    "source": "https://d3fenhwk93s16g.cloudfront.net/m4u2k6/hd_webm.webm?t=1436213481559ae0e916b16",
-                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/ef/55/ef555f851da046f5bcb833fb679654fd.png",
-                    "duration": 9.2
+                    "title": "Hello from Ritu K",
+                    "source": "https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm",
+                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/70/2b/702ba30e10cf9af1a464e818e5844e6c.png",
+                    "duration": 55.466
                 }
             },
             "currentTime": 0
