@@ -31,7 +31,7 @@ def find_version(*file_paths):
 setup(
     name='popcoder',
     entry_points={
-        'console_scripts': ['crontabber = crontabber.main:main']
+        'console_scripts': ['popcoder = popcoder.popcoder:process_json']
     },
     version=find_version('popcoder', '__init__.py'),
     url='https://github.com/mozilla/popcoder',
