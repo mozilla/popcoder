@@ -36,6 +36,7 @@ class Video:
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
+        self.real_duration = data['media'][0]['duration']
         self.duration = data['media'][0]['duration']
         self.out = out
 
@@ -44,20 +45,21 @@ class Video:
     def process(self):
         self.draw_videos()
         self.draw_items()
+        self.draw_edits()
         call(['ffmpeg', '-i', self.current_video.name, self.out])
 
     def draw_videos(self):
         i = 0
         for video in reversed(self.track_videos):
+            overlay = NamedTemporaryFile(
+                suffix='.avi',
+                delete=self.DELETE_VIDEOS
+            )
+
             # Trim the video if it needs to be
-            if (video.options['from'] == 0 or
+            if (video.options['from'] != 0 or
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
-
-                overlay = NamedTemporaryFile(
-                    suffix='.avi',
-                    delete=self.DELETE_VIDEOS
-                )
 
                 self.editor.trim(
                     video.options['title'].replace(' ', '-') + '.webm',
@@ -65,22 +67,22 @@ class Video:
                     seconds_to_timecode(video.options['from']),
                     seconds_to_timecode(video.options['duration'])
                 )
+            else:
+                overlay.name = video.options['title'].replace(' ', '-') + \
+                    '.webm'
 
-                # Also scale the video down to size
-                if not video.options['height'] == 100 or True:
-                    scaled_overlay = NamedTemporaryFile(
-                        suffix='.avi',
-                        delete=self.DELETE_VIDEOS
-                    )
-                    self.editor.scale_video(
-                        overlay.name,
-                        scaled_overlay.name,
-                        percent_to_px(video.options['width'], self.size[0]),
-                        percent_to_px(video.options['height'], self.size[1]),
-                    )
-                    overlay.close()
-                else:
-                    scaled_overlay = overlay
+            # Also scale the video down to size
+            scaled_overlay = NamedTemporaryFile(
+                suffix='.avi',
+                delete=self.DELETE_VIDEOS
+            )
+            self.editor.scale_video(
+                overlay.name,
+                scaled_overlay.name,
+                percent_to_px(video.options['width'], self.size[0]),
+                percent_to_px(video.options['height'], self.size[1]),
+            )
+            overlay.close()
 
             out = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
 
@@ -159,6 +161,37 @@ class Video:
                 pass
             self.current_video = item_file
 
+    def draw_edits(self):
+        print
+        print
+        print
+        print self.track_edits
+        print
+        print
+        print
+        for edit in self.track_edits:
+            edit_file = NamedTemporaryFile(suffix='.avi',
+                                           delete=self.DELETE_VIDEOS)
+            if edit.edit_type == 'skip':
+                self.editor.skip(
+                    self.current_video.name,
+                    edit_file.name,
+                    edit.options['start'],
+                    edit.options['end'] - edit.options['start'],
+                )
+            elif edit.edit_type == 'loopPlugin':
+                print edit.options['loop']
+                self.editor.loop(
+                    self.current_video.name,
+                    edit_file.name,
+                    str(edit.options['start']),
+                    str(edit.options['end'] - edit.options['start']),
+                    int(edit.options['loop']),
+                    str(self.real_duration),
+                )
+
+            self.current_video = edit_file
+
     def preprocess(self, data):
         """
         Processes popcorn JSON and builds a sane data model out of it
@@ -177,7 +210,7 @@ class Video:
                   for event in track['trackEvents']]
 
         for event in events:
-            if event['type'] == 'skip' or event['type'] == 'loop':
+            if event['type'] == 'skip' or event['type'] == 'loopPlugin':
                 edit = TrackEdit(event['type'], event['popcornOptions'])
 
                 self.track_edits.append(edit)
@@ -226,12 +259,9 @@ class Video:
         events
         """
         for edit in self.track_edits:
-            if edit.edit_type == 'skip':
-                self.duration -= (edit.options['end'] -
-                                  edit.options['start'])
-            if edit.edit_type == 'loop':
+            if edit.edit_type == 'loopPlugin':
                 self.duration += (
                     (edit.options['end'] -
                      edit.options['start']) *
-                    edit.options['loop']
+                    float(edit.options['loop'])
                 )

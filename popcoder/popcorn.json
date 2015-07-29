@@ -12,26 +12,61 @@
         "media": [{
             "id": "Media0",
             "name": "Media0",
-            "url": "#t=,51.505302662471365",
+            "url": "#t=,55.466",
             "target": "video",
-            "duration": 51.505302662471365,
+            "duration": 55.466,
             "popcornOptions": {
                 "frameAnimation": true
             },
             "controls": true,
             "tracks": [{
                 "name": "",
-                "id": "2",
+                "id": "3",
                 "order": 0,
                 "trackEvents": [{
+                    "id": "TrackEvent2",
+                    "type": "loopPlugin",
+                    "popcornOptions": {
+                        "start": 25.65380201814801,
+                        "end": 27.029337990223596,
+                        "target": "video-container",
+                        "loop": "5",
+                        "id": "TrackEvent2"
+                    },
+                    "track": "3",
+                    "name": "TrackEvent2"
+                }]
+            }, {
+                "name": "",
+                "id": "2",
+                "order": 1,
+                "trackEvents": [{
                     "id": "TrackEvent1",
+                    "type": "skip",
+                    "popcornOptions": {
+                        "start": 2.2008623715301243,
+                        "end": 19.60139241828628,
+                        "target": "video-container",
+                        "left": 48.56828193832599,
+                        "top": 97.26027397260275,
+                        "id": "TrackEvent1"
+                    },
+                    "track": "2",
+                    "name": "TrackEvent1"
+                }]
+            }, {
+                "name": "",
+                "id": "0",
+                "order": 2,
+                "trackEvents": [{
+                    "id": "TrackEvent0",
                     "type": "sequencer",
                     "popcornOptions": {
-                        "start": 23.71887732310484,
-                        "source": ["https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm?butteruid=1438114632383"],
+                        "start": 0,
+                        "source": ["https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm?butteruid=1438208163961"],
                         "fallback": "",
                         "denied": false,
-                        "end": 51.505302662471365,
+                        "end": 55.466,
                         "from": 0,
                         "title": "Hello from Ritu K",
                         "type": "AirMozilla",
@@ -41,93 +76,20 @@
                         "contentType": "",
                         "hidden": false,
                         "target": "video-container",
-                        "left": 25.207771140170564,
-                        "top": 0,
-                        "width": 74.8527701978864,
-                        "height": 100,
-                        "volume": 100,
-                        "mute": false,
-                        "zindex": 1000,
-                        "id": "TrackEvent1"
-                    },
-                    "track": "2",
-                    "name": "TrackEvent1"
-                }]
-            }, {
-                "name": "",
-                "id": "0",
-                "order": 1,
-                "trackEvents": [{
-                    "id": "TrackEvent0",
-                    "type": "sequencer",
-                    "popcornOptions": {
-                        "start": 8.115679995017334,
-                        "source": ["https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm?butteruid=1438114632382"],
-                        "fallback": "",
-                        "denied": false,
-                        "end": 25.30983848196969,
-                        "from": 0,
-                        "title": "Hello from Nan",
-                        "type": "AirMozilla",
-                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/ac/8a/ac8a076ee50a78d5d86544c258ecaec6.png",
-                        "duration": 34.433,
-                        "linkback": "",
-                        "contentType": "",
-                        "hidden": false,
-                        "target": "video-container",
                         "left": 0,
                         "top": 0,
-                        "width": 75.73339102374388,
+                        "width": 100,
                         "height": 100,
                         "volume": 100,
                         "mute": false,
-                        "zindex": 999,
+                        "zindex": 998,
                         "id": "TrackEvent0"
                     },
                     "track": "0",
                     "name": "TrackEvent0"
-                }, {
-                    "id": "TrackEvent2",
-                    "type": "text",
-                    "popcornOptions": {
-                        "start": 0,
-                        "end": 8.02619,
-                        "target": "video-container",
-                        "text": "This is a test",
-                        "linkUrl": "",
-                        "linkTarget": "_blank",
-                        "position": "custom",
-                        "alignment": "left",
-                        "transition": "popcorn-fade",
-                        "fontFamily": "Open Sans",
-                        "fontSize": 10,
-                        "fontColor": "#000000",
-                        "shadow": false,
-                        "shadowColor": "#444444",
-                        "background": false,
-                        "backgroundColor": "#888888",
-                        "fontDecorations": {
-                            "bold": false,
-                            "italics": false
-                        },
-                        "left": 31.700515552055908,
-                        "top": 44.81409001956947,
-                        "width": 32.693048159959204,
-                        "zindex": 999,
-                        "id": "TrackEvent2"
-                    },
-                    "track": "0",
-                    "name": "TrackEvent2"
                 }]
             }],
             "clipData": {
-                "https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm": {
-                    "type": "AirMozilla",
-                    "title": "Hello from Nan",
-                    "source": "https://d3fenhwk93s16g.cloudfront.net/r8a4i5/hd_webm.webm",
-                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/ac/8a/ac8a076ee50a78d5d86544c258ecaec6.png",
-                    "duration": 34.433
-                },
                 "https://d3fenhwk93s16g.cloudfront.net/p0f8n3/hd_webm.webm": {
                     "type": "AirMozilla",
                     "title": "Hello from Ritu K",

@@ -1,4 +1,5 @@
 from subprocess import call
+from tempfile import NamedTemporaryFile
 
 
 class Editor:
@@ -15,16 +16,16 @@ class Editor:
         @param duration : duration of video after start
         """
         command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
-              '-y', '-preset', 'veryslow', '-t', duration, out]
+                   '-y', '-preset', 'veryslow', '-t', duration, out]
         call(command)
 
-    def skip(self, video_name, start, duration, out):
+    def skip(self, video_name, out, start, duration):
         """
         Skips a section of the clip
         @param video_name : name of video input file
+        @param out : name of output file
         @param start : start time of the skip (seconds)
         @param duration : duration of the skip (seconds)
-        @param out : name of output file
         """
         cfilter = (r"[0:v]trim=duration={start}[av];"
                    r"[0:a]atrim=duration={start}[aa];"
@@ -37,7 +38,7 @@ class Editor:
         call(['ffmpeg', '-i', video_name,
               '-filter_complex', cfilter, '-y',
               '-map', '[outv]',
-              '-map', '[outa]','-c:v', 'huffyuv', '-preset', 'veryslow',
+              '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
               out])
 
     def draw_video(self, underlay, overlay, out, x, y):
@@ -55,13 +56,14 @@ class Editor:
         """
         cfilter = r"[0:1][1:1]amerge=inputs=2[aout];overlay=x={0}:y={1}"\
             .format(x, y)
+
+        # Manually set the color space because other wise you'll have
+        # some trippy looking overlays (-pix_fmt yuv422p)
         command = ['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'huffyuv',
-              '-y',
-              # Manually set the color space because other wise you'll have
-              # some trippy looking overlays
-              '-pix_fmt', 'yuv422p',
-              '-filter_complex', cfilter, '-map', '[aout]', out]
+                   '-c:v', 'huffyuv',
+                   '-y',
+                   '-pix_fmt', 'yuv422p',
+                   '-filter_complex', cfilter, '-map', '[aout]', out]
 
         call(command)
 
@@ -126,7 +128,7 @@ class Editor:
                    "enable='between(t, {start}, {end}')")\
             .format(x=x, y=y, start=start, end=end)
 
-        call(['ffmpeg', '-i', video_name, '-i', image_name,'-c:v', 'huffyuv',
+        call(['ffmpeg', '-i', video_name, '-i', image_name, '-c:v', 'huffyuv',
               '-y', '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
@@ -139,29 +141,31 @@ class Editor:
         @param iterations : amount of times to loop
         @param video_length : length of video
         """
-        beginning = 'beginning.mp4'
-        loop_section = 'loop.mp4'  # section of video that will be looped
-        loops = 'loops.mp4'  # collection of looped sections
-        end = 'end.mp4'
+        beginning = NamedTemporaryFile(suffix='.avi')
+        # section of video that will be looped
+        loop_section = NamedTemporaryFile(suffix='.avi')
+        # collection of looped sections
+        loops = NamedTemporaryFile(suffix='.avi')
+        end = NamedTemporaryFile(suffix='.avi')
 
-        self.trim(video_name, '0', start, beginning)
-        self.trim(video_name, start, duration, loop_section)
-        self.trim(video_name, '00:00:08', video_length, end)
+        self.trim(video_name, beginning.name, '0', start)
+        self.trim(video_name, loop_section.name, start, duration)
+        self.trim(video_name, end.name, '00:00:08', video_length)
 
         # Open text file it and write the loop clip  n times
         with open('loop.txt', 'w') as f:
             for i in range(1, iterations):
-                line = 'file {0}\n'.format(loop_section)
+                line = 'file {0}\n'.format(loop_section.name)
                 f.write(line)
 
         # concat the loop clip upon itself n times
         call(['ffmpeg', '-f', 'concat',
               '-i', 'loop.txt', '-y',
-              '-c', 'copy', loops])
+              '-c', 'copy', loops.name])
 
         # concat the beginning clip, combo of loops, and end clip
         cfilter = (r"[0:0] [0:1] [1:0] [1:1] [2:0] [2:1]"
                    r"concat=n=3:v=1:a=1 [v] [a1]")
-        call(['ffmpeg', '-i', beginning, '-i', loops, '-i', end,
-              '-filter_complex', cfilter, '-y',
+        call(['ffmpeg', '-i', beginning.name, '-i', loops.name, '-i', end.name,
+              '-filter_complex', cfilter, '-y', '-c:v', 'huffyuv',
               '-map', '[v]', '-map', '[a1]', out])
