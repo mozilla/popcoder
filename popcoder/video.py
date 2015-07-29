@@ -24,7 +24,7 @@ class Video:
         Constructor
         @param data : The popcorn editor project json blob
         """
-        self.DELETE_VIDEOS = True
+        self.DELETE_VIDEOS = False
 
         self.track_edits = []
         self.track_items = []
@@ -39,6 +39,7 @@ class Video:
 
     def process(self):
         self.draw_videos()
+        self.draw_items()
         call(['ffmpeg', '-i', self.current_video.name, 'out.webm'])
 
     def draw_videos(self):
@@ -127,30 +128,33 @@ class Video:
                    '-c', 'copy', out]
         call(command)
 
-    def draw_edits(self):
-        for edit in self.track_edits:
-            edit_file = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
-            if edit.edit_type == 'text':
+    def draw_items(self):
+        for item in self.track_items:
+            item_file = NamedTemporaryFile(suffix='.avi',
+                                           delete=self.DELETE_VIDEOS)
+            if item.edit_type == 'text':
                 self.editor.draw_text(
                     self.current_video.name,
-                    edit_file.name,
-                    edit.options['start_stamp'],
-                    edit.options['end_stamp'],
-                    edit.options['x_px'],
-                    edit.options['y_px'],
-                    edit.options['text'],
-                    edit.options['color']
+                    item_file.name,
+                    item.options['start_stamp'],
+                    item.options['end_stamp'],
+                    item.options['x_px'],
+                    item.options['y_px'],
+                    item.options['text'],
+                    item.options['fontColor'].replace('#', '0x'),
+                    size=percent_to_px(item.options['fontSize'], self.size[1])
                 )
-            elif edit.edit_type == 'image':
+            elif item.edit_type == 'image':
                 # TODO
                 pass
-            self.current_video = edit_file
+            self.current_video = item_file
 
     def preprocess(self, data):
         """
         Processes popcorn JSON and builds a sane data model out of it
         @param data : The popcorn editor project json blob
         """
+
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
             print 'Downloading {0}.'.format(url)
@@ -158,30 +162,34 @@ class Video:
             urllib.urlretrieve(url, video['title'])
             print 'Finished download!'
         print 'All videos downloaded.'
+
         events = [event for track in data['media'][0]['tracks']
                   for event in track['trackEvents']]
+
         for event in events:
             if event['type'] == 'skip' or event['type'] == 'loop':
                 edit = TrackEdit(event['type'], event['popcornOptions'])
-
-                edit.options['start_stamp'] = \
-                    seconds_to_timecode(edit.options['start'])
-                edit.options['end_stamp'] = \
-                    seconds_to_timecode(edit.options['start'])
-                edit.options['x_px'] = percent_to_px(
-                    edit.options['left'],
-                    self.size[0]
-                )
-                edit.options['y_px'] = percent_to_px(
-                    edit.options['top'],
-                    self.size[1]
-                )
 
                 self.track_edits.append(edit)
 
             if event['type'] == 'text' or event['type'] == 'image':
                 item = TrackItem(event['type'], event['popcornOptions'])
+
+                item.options['start_stamp'] = \
+                    item.options['start']
+                item.options['end_stamp'] = \
+                    item.options['end']
+                item.options['x_px'] = percent_to_px(
+                    item.options['left'],
+                    self.size[0]
+                )
+                item.options['y_px'] = percent_to_px(
+                    item.options['top'],
+                    self.size[1]
+                )
+
                 self.track_items.append(item)
+
             if event['type'] == 'sequencer':
                 video = TrackVideo(
                     event['type'],

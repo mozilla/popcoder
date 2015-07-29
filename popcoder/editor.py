@@ -66,8 +66,8 @@ class Editor:
         call(command)
 
     def draw_text(self, video_name, out, start, end, x, y, text,
-                  color='#FFFFFF', show_background=0,
-                  background_color='#000000'):
+                  color='0xFFFFFF', show_background=0,
+                  background_color='0x000000', size=16):
         """
          Draws text over a video
          @param video_name : name of video input file
@@ -82,17 +82,19 @@ class Editor:
                                   text
          @param background_color : color of background box
          """
-        cfilter = (r"drawtext=fontfile=/Library/Fonts/AppleGothic.ttf: "
-                   r"x={x}: y={y}: fontcolor={font_color}:"
-                   r"box={show_background}: "
-                   r" boxcolor={background_color}:"
-                   r"text={text}: enable='between(t, {start}, {end})'")\
+        cfilter = (r"drawtext=fontfile=/Library/Fonts/AppleGothic.ttf:"
+                   r"x={x}:y={y}:fontcolor='{font_color}':"
+                   r"box={show_background}:"
+                   r"boxcolor='{background_color}':"
+                   r"text='{text}':fontsize={size}:"
+                   "enable='between(t,{start},{end})'")\
             .format(x=x, y=y, font_color=color,
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
-                    end=end)
-        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset', '-y',
-              'veryslow', '-vf', cfilter,  '-an', '-y', out])
+                    end=end, size=size)
+        command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-y',
+              '-vf', cfilter,  '-an', '-y', out]
+        call(command)
 
     def scale_video(self, video_name, out, width, height):
         # Lossless video codecs can't scale videos with uneven width
