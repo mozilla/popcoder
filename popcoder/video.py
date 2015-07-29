@@ -19,12 +19,12 @@ class Video:
     parsing of the popcorn json blob and calling the editing functions in the
     correct order
     """
-    def __init__(self, data, background_color, size=(1280, 720)):
+    def __init__(self, data, out, background_color, size=(1280, 720)):
         """
         Constructor
         @param data : The popcorn editor project json blob
         """
-        self.DELETE_VIDEOS = False
+        self.DELETE_VIDEOS = True
 
         self.track_edits = []
         self.track_items = []
@@ -37,13 +37,14 @@ class Video:
         self.size = size
         self.editor = Editor()
         self.duration = data['media'][0]['duration']
+        self.out = out
 
         self.preprocess(data)
 
     def process(self):
         self.draw_videos()
         self.draw_items()
-        call(['ffmpeg', '-i', self.current_video.name, 'out.webm'])
+        call(['ffmpeg', '-i', self.current_video.name, self.out])
 
     def draw_videos(self):
         i = 0
