@@ -29,7 +29,10 @@ class Video:
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.current_video = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        self.current_video = NamedTemporaryFile(
+            suffix='.avi',
+            delete=self.DELETE_VIDEOS
+        )
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -44,13 +47,16 @@ class Video:
 
     def draw_videos(self):
         i = 0
-        for video in self.track_videos:
+        for video in reversed(self.track_videos):
             # Trim the video if it needs to be
             if (video.options['from'] == 0 or
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
 
-                overlay = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+                overlay = NamedTemporaryFile(
+                    suffix='.avi',
+                    delete=self.DELETE_VIDEOS
+                )
 
                 self.editor.trim(
                     video.options['title'].replace(' ', '-') + '.webm',
@@ -61,7 +67,10 @@ class Video:
 
                 # Also scale the video down to size
                 if not video.options['height'] == 100 or True:
-                    scaled_overlay = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+                    scaled_overlay = NamedTemporaryFile(
+                        suffix='.avi',
+                        delete=self.DELETE_VIDEOS
+                    )
                     self.editor.scale_video(
                         overlay.name,
                         scaled_overlay.name,

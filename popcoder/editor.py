@@ -69,31 +69,35 @@ class Editor:
                   color='0xFFFFFF', show_background=0,
                   background_color='0x000000', size=16):
         """
-         Draws text over a video
-         @param video_name : name of video input file
-         @param out : name of video output file
-         @param start : start timecode to draw text hh:mm:ss
-         @param end : end timecode to draw text hh:mm:ss
-         @param x : x position of text (px)
-         @param y : y position of text (px)
-         @param text : text content to draw
-         @param color : text color
-         @param show_background : boolean to show a background box behind the
-                                  text
-         @param background_color : color of background box
-         """
-        cfilter = (r"drawtext=fontfile=/Library/Fonts/AppleGothic.ttf:"
+        Draws text over a video
+        @param video_name : name of video input file
+        @param out : name of video output file
+        @param start : start timecode to draw text hh:mm:ss
+        @param end : end timecode to draw text hh:mm:ss
+        @param x : x position of text (px)
+        @param y : y position of text (px)
+        @param text : text content to draw
+        @param color : text color
+        @param show_background : boolean to show a background box behind the
+                                 text
+        @param background_color : color of background box
+        """
+        cfilter = (r"[0:0]drawtext=fontfile=/Library/Fonts/AppleGothic.ttf:"
                    r"x={x}:y={y}:fontcolor='{font_color}':"
                    r"box={show_background}:"
                    r"boxcolor='{background_color}':"
                    r"text='{text}':fontsize={size}:"
-                   "enable='between(t,{start},{end})'")\
+                   r"enable='between(t,{start},{end})'[vout];"
+                   r"[0:1]apad=pad_len=0[aout]")\
             .format(x=x, y=y, font_color=color,
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
                     end=end, size=size)
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-y',
-              '-vf', cfilter,  '-an', '-y', out]
+                   '-filter_complex', cfilter,  '-an', '-y',
+                   '-map', '[vout]',
+                   '-map', '[aout]',
+                   out]
         call(command)
 
     def scale_video(self, video_name, out, width, height):
