@@ -2,6 +2,7 @@ import urllib
 
 from subprocess import call
 from collections import namedtuple
+from tempfile import NamedTemporaryFile
 
 from editor import Editor
 from util import seconds_to_timecode, percent_to_px
@@ -23,10 +24,15 @@ class Video:
         Constructor
         @param data : The popcorn editor project json blob
         """
+        self.DELETE_VIDEOS = False
+
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
-        self.video_name = 'blank.avi'
+        self.current_video = NamedTemporaryFile(
+            suffix='.avi',
+            delete=self.DELETE_VIDEOS
+        )
         self.background_color = background_color
         self.size = size
         self.editor = Editor()
@@ -36,145 +42,163 @@ class Video:
 
     def process(self):
         self.draw_videos()
+        self.draw_items()
+        call(['ffmpeg', '-i', self.current_video.name, 'out.webm'])
 
     def draw_videos(self):
         i = 0
-        for video in self.track_videos:
+        for video in reversed(self.track_videos):
             # Trim the video if it needs to be
             if (video.options['from'] == 0 or
                 video.options['end'] - video.options['from'] <
                     video.options['duration']):
 
-                overlay = 'trimmed_' + str(i) + '.avi'
+                overlay = NamedTemporaryFile(
+                    suffix='.avi',
+                    delete=self.DELETE_VIDEOS
+                )
 
                 self.editor.trim(
-                    video.options['title'],
-                    overlay,
+                    video.options['title'].replace(' ', '-') + '.webm',
+                    overlay.name,
                     seconds_to_timecode(video.options['from']),
                     seconds_to_timecode(video.options['duration'])
                 )
 
-
                 # Also scale the video down to size
                 if not video.options['height'] == 100 or True:
-                    scaled_overlay = 'scaled_' + str(i) + '.avi'
+                    scaled_overlay = NamedTemporaryFile(
+                        suffix='.avi',
+                        delete=self.DELETE_VIDEOS
+                    )
                     self.editor.scale_video(
-                        overlay,
-                        scaled_overlay,
+                        overlay.name,
+                        scaled_overlay.name,
                         percent_to_px(video.options['width'], self.size[0]),
                         percent_to_px(video.options['height'], self.size[1]),
                     )
+                    overlay.close()
                 else:
                     scaled_overlay = overlay
 
-            out = 'video_' + str(i) + '.avi'
+            out = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
 
-            self.overlay_videos(self.video_name, scaled_overlay,
-                                video.options, out)
+            self.overlay_videos(self.current_video.name, scaled_overlay.name,
+                                video.options, out.name)
+            scaled_overlay.close()
 
-            self.video_name = out
+            self.current_video = out
             i += 1
 
     def overlay_videos(self, underlay_video, overlay_video, options, out):
+        overlay1 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay2 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay3 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay4 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+
         self.editor.trim(
             underlay_video,
-            'overlay_1.avi',
+            overlay1.name,
             '00:00:00',
             str(options['start'])
         )
 
         self.editor.trim(
             underlay_video,
-            'overlay_2.avi',
+            overlay2.name,
             str(options['start']),
             str(options['end'] - options['start']),
         )
 
         self.editor.trim(
             underlay_video,
-            'overlay_3.avi',
+            overlay3.name,
             str(options['end'] - options['start']),
             str(options['end'])
         )
 
         # Now draw it onto the screen
         self.editor.draw_video(
-            'overlay_2.avi',
+            overlay2.name,
             overlay_video,
-            'overlay_4.avi',
+            overlay4.name,
             percent_to_px(options['left'], self.size[0]),
             percent_to_px(options['top'], self.size[1])
         )
 
         with open('loop.txt', 'w') as f:
             if not options['start'] == 0:
-                f.write('file overlay_1.avi\n')
-            f.write('file overlay_4.avi\n')
+                f.write('file {0}\n'.format(overlay1.name))
+            f.write('file {0}\n'.format(overlay4.name))
             if not options['start'] == 0:
-                f.write('file overlay_3.avi\n')
+                f.write('file {0}\n'.format(overlay3.name))
 
-        call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt',
-              '-c', 'copy', out])
+        command = ['ffmpeg', '-f', 'concat', '-i', 'loop.txt', '-y',
+                   '-c', 'copy', out]
+        call(command)
 
-    def draw_edits(self):
-        i = 0
-        for edit in self.track_edits:
-            if i == 0:
-                name = self.video_name
-            else:
-                name = str(i)
-
-            if edit.edit_type == 'text':
+    def draw_items(self):
+        for item in self.track_items:
+            item_file = NamedTemporaryFile(suffix='.avi',
+                                           delete=self.DELETE_VIDEOS)
+            if item.edit_type == 'text':
                 self.editor.draw_text(
-                    name + '.avi',
-                    'edit_' + str(++i) + '.avi',
-                    edit.options['start_stamp'],
-                    edit.options['end_stamp'],
-                    edit.options['x_px'],
-                    edit.options['y_px'],
-                    edit.options['text'],
-                    edit.options['color']
+                    self.current_video.name,
+                    item_file.name,
+                    item.options['start_stamp'],
+                    item.options['end_stamp'],
+                    item.options['x_px'],
+                    item.options['y_px'],
+                    item.options['text'],
+                    item.options['fontColor'].replace('#', '0x'),
+                    size=percent_to_px(item.options['fontSize'], self.size[1])
                 )
-            elif edit.edit_type == 'image':
+            elif item.edit_type == 'image':
                 # TODO
                 pass
+            self.current_video = item_file
 
     def preprocess(self, data):
         """
         Processes popcorn JSON and builds a sane data model out of it
         @param data : The popcorn editor project json blob
         """
+
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
             print 'Downloading {0}.'.format(url)
+            video['title'] = video['title'].replace(' ', '-') + '.webm'
             urllib.urlretrieve(url, video['title'])
             print 'Finished download!'
         print 'All videos downloaded.'
+
         events = [event for track in data['media'][0]['tracks']
                   for event in track['trackEvents']]
+
         for event in events:
             if event['type'] == 'skip' or event['type'] == 'loop':
                 edit = TrackEdit(event['type'], event['popcornOptions'])
-
-                edit.options['start_stamp'] = \
-                    seconds_to_timecode(edit.options['start'])
-                edit.options['end_stamp'] = \
-                    seconds_to_timecode(edit.options['start'])
-                edit.options['x_px'] = percent_to_px(
-                    edit.options['left'],
-                    self.size[0]
-                )
-                edit.options['y_px'] = percent_to_px(
-                    edit.options['top'],
-                    self.size[1]
-                )
 
                 self.track_edits.append(edit)
 
             if event['type'] == 'text' or event['type'] == 'image':
                 item = TrackItem(event['type'], event['popcornOptions'])
+
+                item.options['start_stamp'] = \
+                    item.options['start']
+                item.options['end_stamp'] = \
+                    item.options['end']
+                item.options['x_px'] = percent_to_px(
+                    item.options['left'],
+                    self.size[0]
+                )
+                item.options['y_px'] = percent_to_px(
+                    item.options['top'],
+                    self.size[1]
+                )
+
                 self.track_items.append(item)
+
             if event['type'] == 'sequencer':
                 video = TrackVideo(
                     event['type'],
@@ -185,13 +209,15 @@ class Video:
 
         self.parse_duration()
 
-        cfilter = r'color=c={0}:s={1}x{2}:d={3}'.format(
+        cfilter = r'color=c={0}:s={1}x{2}:d={3};aevalsrc=0:d={4}'.format(
             self.background_color,
             self.size[0],
             self.size[1],
-            self.duration
+            self.duration,
+            self.duration,
         )
-        call(['ffmpeg', '-filter_complex', cfilter, self.video_name])
+        call(['ffmpeg', '-filter_complex', cfilter, '-y',
+              self.current_video.name])
 
     def parse_duration(self):
         """

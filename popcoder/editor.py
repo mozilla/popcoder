@@ -14,8 +14,9 @@ class Editor:
         @param start : starting position after the trim
         @param duration : duration of video after start
         """
-        call(['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
-              '-t', duration, out])
+        command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
+              '-y', '-preset', 'veryslow', '-t', duration, out]
+        call(command)
 
     def skip(self, video_name, start, duration, out):
         """
@@ -34,9 +35,9 @@ class Editor:
             .replace(' ', '')
 
         call(['ffmpeg', '-i', video_name,
-              '-filter_complex', cfilter,
+              '-filter_complex', cfilter, '-y',
               '-map', '[outv]',
-              '-map', '[outa]','-c:v', 'huffyuv',
+              '-map', '[outa]','-c:v', 'huffyuv', '-preset', 'veryslow',
               out])
 
     def draw_video(self, underlay, overlay, out, x, y):
@@ -52,41 +53,63 @@ class Editor:
         @param w : width of overlay
         @param h : height of overlay
         """
-        cfilter = r"overlay=x={0}:y={1}:".format(x, y)
-        call(['ffmpeg', '-i', underlay, '-i', overlay,
-              '-c:v', 'huffyuv', '-filter_complex', cfilter, out])
+        cfilter = r"[0:1][1:1]amerge=inputs=2[aout];overlay=x={0}:y={1}"\
+            .format(x, y)
+        command = ['ffmpeg', '-i', underlay, '-i', overlay,
+              '-c:v', 'huffyuv',
+              '-y',
+              # Manually set the color space because other wise you'll have
+              # some trippy looking overlays
+              '-pix_fmt', 'yuv422p',
+              '-filter_complex', cfilter, '-map', '[aout]', out]
+
+        call(command)
 
     def draw_text(self, video_name, out, start, end, x, y, text,
-                  color='#FFFFFF', show_background=0,
-                  background_color='#000000'):
+                  color='0xFFFFFF', show_background=0,
+                  background_color='0x000000', size=16):
         """
-         Draws text over a video
-         @param video_name : name of video input file
-         @param out : name of video output file
-         @param start : start timecode to draw text hh:mm:ss
-         @param end : end timecode to draw text hh:mm:ss
-         @param x : x position of text (px)
-         @param y : y position of text (px)
-         @param text : text content to draw
-         @param color : text color
-         @param show_background : boolean to show a background box behind the
-                                  text
-         @param background_color : color of background box
-         """
-        cfilter = (r"drawtext=fontfile=/Library/Fonts/AppleGothic.ttf: "
-                   r"x={x}: y={y}: fontcolor={font_color}:"
-                   r"box={show_background}: "
-                   r" boxcolor={background_color}:"
-                   r"text={text}: enable='between(t, {start}, {end})'")\
+        Draws text over a video
+        @param video_name : name of video input file
+        @param out : name of video output file
+        @param start : start timecode to draw text hh:mm:ss
+        @param end : end timecode to draw text hh:mm:ss
+        @param x : x position of text (px)
+        @param y : y position of text (px)
+        @param text : text content to draw
+        @param color : text color
+        @param show_background : boolean to show a background box behind the
+                                 text
+        @param background_color : color of background box
+        """
+        cfilter = (r"[0:0]drawtext=fontfile=/Library/Fonts/AppleGothic.ttf:"
+                   r"x={x}:y={y}:fontcolor='{font_color}':"
+                   r"box={show_background}:"
+                   r"boxcolor='{background_color}':"
+                   r"text='{text}':fontsize={size}:"
+                   r"enable='between(t,{start},{end})'[vout];"
+                   r"[0:1]apad=pad_len=0[aout]")\
             .format(x=x, y=y, font_color=color,
                     show_background=show_background,
                     background_color=background_color, text=text, start=start,
-                    end=end)
-        call(['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-vf', cfilter,  '-an', '-y', out])
+                    end=end, size=size)
+        command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-y',
+                   '-filter_complex', cfilter,  '-an', '-y',
+                   '-map', '[vout]',
+                   '-map', '[aout]',
+                   out]
+        call(command)
 
     def scale_video(self, video_name, out, width, height):
+        # Lossless video codecs can't scale videos with uneven width
+        width = int(width)
+        if width % 2 != 0:
+            width += 1
+
         scale = "scale={0}:{1}".format(width, height)
-        call(['ffmpeg', '-i', video_name, '-vf', scale, out])
+        command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
+                   'veryslow', '-y', '-vf', scale, out]
+        call(command)
 
     def draw_image(self, video_name, image_name, out, start, end, x, y):
         """
@@ -104,7 +127,7 @@ class Editor:
             .format(x=x, y=y, start=start, end=end)
 
         call(['ffmpeg', '-i', video_name, '-i', image_name,'-c:v', 'huffyuv',
-              '-filter_complex', cfilter, out])
+              '-y', '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
     def loop(self, video_name, out, start, duration, iterations, video_length):
         """
@@ -133,12 +156,12 @@ class Editor:
 
         # concat the loop clip upon itself n times
         call(['ffmpeg', '-f', 'concat',
-              '-i', 'loop.txt',
+              '-i', 'loop.txt', '-y',
               '-c', 'copy', loops])
 
         # concat the beginning clip, combo of loops, and end clip
         cfilter = (r"[0:0] [0:1] [1:0] [1:1] [2:0] [2:1]"
                    r"concat=n=3:v=1:a=1 [v] [a1]")
         call(['ffmpeg', '-i', beginning, '-i', loops, '-i', end,
-              '-filter_complex', cfilter,
+              '-filter_complex', cfilter, '-y',
               '-map', '[v]', '-map', '[a1]', out])
