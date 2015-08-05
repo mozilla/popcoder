@@ -162,13 +162,6 @@ class Video:
             self.current_video = item_file
 
     def draw_edits(self):
-        print
-        print
-        print
-        print self.track_edits
-        print
-        print
-        print
         for edit in self.track_edits:
             edit_file = NamedTemporaryFile(suffix='.avi',
                                            delete=self.DELETE_VIDEOS)
@@ -180,7 +173,6 @@ class Video:
                     edit.options['end'] - edit.options['start'],
                 )
             elif edit.edit_type == 'loopPlugin':
-                print edit.options['loop']
                 self.editor.loop(
                     self.current_video.name,
                     edit_file.name,

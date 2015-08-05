@@ -22,5 +22,4 @@ def seconds_to_timecode(sec):
 
 
 def percent_to_px(val, scale):
-    print val
     return (scale / 100) * val
