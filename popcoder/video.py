@@ -192,10 +192,10 @@ class Video:
 
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
-            print 'Downloading {0}.'.format(url)
+            print 'Downloading {0} from {1}.'.format(video['title'], url)
             video['title'] = video['title'].replace(' ', '-') + '.webm'
             urllib.urlretrieve(url, video['title'])
-            print 'Finished download!'
+            print 'video downloaded as %s!' % video['title']
         print 'All videos downloaded.'
 
         events = [event for track in data['media'][0]['tracks']
