@@ -1,3 +1,4 @@
+import os
 import urllib
 
 from subprocess import call
@@ -39,6 +40,7 @@ class Video:
         self.real_duration = data['media'][0]['duration']
         self.duration = data['media'][0]['duration']
         self.out = out
+        self.base_videos = []
 
         self.preprocess(data)
 
@@ -47,6 +49,9 @@ class Video:
         self.draw_items()
         self.draw_edits()
         call(['ffmpeg', '-i', self.current_video.name, self.out])
+
+        for video in self.base_videos:
+            os.remove(video)
 
     def draw_videos(self):
         i = 0
@@ -62,14 +67,13 @@ class Video:
                     video.options['duration']):
 
                 self.editor.trim(
-                    video.options['title'].replace(' ', '-') + '.webm',
+                    video.options['title'],
                     overlay.name,
                     seconds_to_timecode(video.options['from']),
                     seconds_to_timecode(video.options['duration'])
                 )
             else:
-                overlay.name = video.options['title'].replace(' ', '-') + \
-                    '.webm'
+                overlay.name = video.options['title']
 
             # Also scale the video down to size
             scaled_overlay = NamedTemporaryFile(
@@ -129,16 +133,19 @@ class Video:
             percent_to_px(options['top'], self.size[1])
         )
 
-        with open('loop.txt', 'w') as f:
+        loop_file = NamedTemporaryFile(suffix='.txt')
+
+        with open(loop_file.name, 'w') as f:
             if not options['start'] == 0:
                 f.write('file {0}\n'.format(overlay1.name))
             f.write('file {0}\n'.format(overlay4.name))
             if not options['start'] == 0:
                 f.write('file {0}\n'.format(overlay3.name))
 
-        command = ['ffmpeg', '-f', 'concat', '-i', 'loop.txt', '-y',
+        command = ['ffmpeg', '-f', 'concat', '-i', loop_file.name, '-y',
                    '-c', 'copy', out]
         call(command)
+        loop_file.close()
 
     def draw_items(self):
         for item in self.track_items:
@@ -195,6 +202,7 @@ class Video:
             print 'Downloading {0} from {1}.'.format(video['title'], url)
             video['title'] = video['title'].replace(' ', '-') + '.webm'
             urllib.urlretrieve(url, video['title'])
+            self.base_videos.append(video['title'])
             print 'video downloaded as %s!' % video['title']
         print 'All videos downloaded.'
 
