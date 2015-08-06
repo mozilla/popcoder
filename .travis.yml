@@ -25,7 +25,7 @@ deploy:
   provider: pypi
   user: peterbe
   password:
-    secure: N4eEiY/L+LeGDaCw7EowDAohUr////qB5LR8vIFvrt21/K2f258LeBJIYSbUWsuHacjCT6PFRSeH7lK5/L+QChDdlCb3z5ctzpPxd5ga65HTpHgGJzgqY/8A85$
+    secure: YpI16ldZDbn7PF7vs8igIKBFC3lX1cuWwrMoTeWPE96kH9pkek+hp/lkyC/sFUn1Yx1R1pw7AIubtshNG+MYFUlW84PdUuHbJM5gEFPDwlYybCQY+CWyhSWFmdqizJEIRi+H9xr1/koZ4qsOfZGFGXpXDpPD8yUUj49K7l72Sv2vO42gZrGcXPMOXgkNnAPROWQJAMtPC6Tz2bfU/iOfUdFM/RyDZmdlx45sk6Libu00aWFESwKQHNt0Q06mqrJ54vuPebuWmfSGBtvnCoPl2tsxN30CydlN3zdbKGmY4NNFtOG83LFxejU9IeZ8MaG4UOPCK5mU9Or1N0f+PvmqfxxC5GGRgKOlSz0OSeVkbDlEfO/IU+HaxUAgc4SIOyd7sCIFUn180tGfRCw0vLRoPGbmLQjTOtgV9FP9OWssepqPmSij5rAEi0ZhzGD6XJ9h7+SV5AXSHvt4AGfABWTT22+krFlGHC2/mUMbCawgnMMpVjVJl2sD1T10Ay6BJGs8rILnZLqhWsM//dlaUUpyyYWNoCgJ5UCSEhDJxNrXpDHuqUdTe55UqduMp1Z5SVIZx/Bj78++1kLoSGMJ0RokceCucYY2u6h6ULPCS6JaNyPYWhB56RBaWzTdW845UTiXCqGo0hUB1lceHsSiD/pWAVhduh1cAMUuLRsgIZ49Kfk=
   on:
     repo: mozilla/popcoder
   distributions: "sdist bdist_wheel"
