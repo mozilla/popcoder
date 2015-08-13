@@ -7,7 +7,7 @@ class Editor:
     def __init__(self, ffmpeg_path='ffmpeg'):
         self.ffmpeg_path = ffmpeg_path
 
-    def trim(self, video_name, out, start, duration):
+    def trim(self, video_name, out, start, duration, verbose=False):
         """
         Trims a clip to be duration starting at start
         @param video_name : name of the input video
@@ -17,9 +17,12 @@ class Editor:
         """
         command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
                    '-y', '-preset', 'veryslow', '-t', duration, out]
+        if verbose:
+            print 'Trimming {0} into {1}'.format(video_name, out)
+            print ' '.join(command)
         call(command)
 
-    def skip(self, video_name, out, start, duration):
+    def skip(self, video_name, out, start, duration, verbose=False):
         """
         Skips a section of the clip
         @param video_name : name of video input file
@@ -35,13 +38,19 @@ class Editor:
             .format(start=start, offset=start + duration)\
             .replace(' ', '')
 
-        call(['ffmpeg', '-i', video_name,
-              '-filter_complex', cfilter, '-y',
-              '-map', '[outv]',
-              '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
-              out])
+        command = ['ffmpeg', '-i', video_name,
+            '-filter_complex', cfilter, '-y',
+            '-map', '[outv]',
+            '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
+            out]
 
-    def draw_video(self, underlay, overlay, out, x, y):
+        if verbose:
+            print 'Skipping {0} into {1}'.format(video_name, out)
+            print ' '.join(command)
+
+        call(command)
+
+    def draw_video(self, underlay, overlay, out, x, y, verbose=False):
         """
         Draws one video over another
         @param underlay : video file on bottom
@@ -65,11 +74,15 @@ class Editor:
                    '-pix_fmt', 'yuv422p',
                    '-filter_complex', cfilter, '-map', '[aout]', out]
 
+        if verbose:
+            print 'Drawing video {0} on top of {1}'.format(underlay, overlay)
+            print command
+
         call(command)
 
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='0xFFFFFF', show_background=0,
-                  background_color='0x000000', size=16):
+                  background_color='0x000000', size=16, verbose=False):
         """
         Draws text over a video
         @param video_name : name of video input file
@@ -100,9 +113,18 @@ class Editor:
                    '-map', '[vout]',
                    '-map', '[aout]',
                    out]
+
+        if verbose:
+            print 'Drawing text "{0}" onto {1} output as {2}'.format(
+                text,
+                video_name,
+                out,
+            )
+            print ' '.join(command)
+
         call(command)
 
-    def scale_video(self, video_name, out, width, height):
+    def scale_video(self, video_name, out, width, height, verbose=False):
         # Lossless video codecs can't scale videos with uneven width
         width = int(width)
         if width % 2 != 0:
@@ -111,9 +133,20 @@ class Editor:
         scale = "scale={0}:{1}".format(width, height)
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
                    'veryslow', '-y', '-vf', scale, out]
+
+        if verbose:
+            print 'scaling video {0} into {1} ... {2}:{3}'.format(
+                video_name,
+                out,
+                width,
+                height
+            )
+            print ' '.join(command)
+
         call(command)
 
-    def draw_image(self, video_name, image_name, out, start, end, x, y):
+    def draw_image(self, video_name, image_name, out, start, end, x, y,
+                   verbose=False):
         """
         Draws an image over the video
         @param video_name : name of video input file
@@ -131,7 +164,8 @@ class Editor:
         call(['ffmpeg', '-i', video_name, '-i', image_name, '-c:v', 'huffyuv',
               '-y', '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
-    def loop(self, video_name, out, start, duration, iterations, video_length):
+    def loop(self, video_name, out, start, duration, iterations, video_length,
+             verbose=False):
         """
         Loops a section of a video
         @param video_name : name of video input file

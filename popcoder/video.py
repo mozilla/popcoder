@@ -1,4 +1,5 @@
 import os
+import re
 import urllib
 
 from subprocess import call
@@ -25,7 +26,7 @@ class Video:
         Constructor
         @param data : The popcorn editor project json blob
         """
-        self.DELETE_VIDEOS = True
+        self.DELETE_VIDEOS = False
 
         self.track_edits = []
         self.track_items = []
@@ -48,7 +49,7 @@ class Video:
         self.draw_videos()
         self.draw_items()
         self.draw_edits()
-        call(['ffmpeg', '-i', self.current_video.name, self.out])
+        call(['mv', self.current_video.name, self.out])
 
         for video in self.base_videos:
             os.remove(video)
@@ -61,6 +62,7 @@ class Video:
                 delete=self.DELETE_VIDEOS
             )
 
+            re.sub(r':(?=..(?<!\d:\d\d))|[^a-zA-Z0-9 ](?<!\.)', '', video.options['title'])
             # Trim the video if it needs to be
             if (video.options['from'] != 0 or
                 video.options['end'] - video.options['from'] <
@@ -80,6 +82,7 @@ class Video:
                 suffix='.avi',
                 delete=self.DELETE_VIDEOS
             )
+
             self.editor.scale_video(
                 overlay.name,
                 scaled_overlay.name,
@@ -200,7 +203,7 @@ class Video:
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
             print 'Downloading {0} from {1}.'.format(video['title'], url)
-            video['title'] = video['title'].replace(' ', '-') + '.webm'
+            re.sub(r':(?=..(?<!\d:\d\d))|[^a-zA-Z0-9 ](?<!\.)', '', video['title'])
             urllib.urlretrieve(url, video['title'])
             self.base_videos.append(video['title'])
             print 'video downloaded as %s!' % video['title']
