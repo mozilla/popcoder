@@ -49,7 +49,9 @@ class Video:
         self.draw_videos()
         self.draw_items()
         self.draw_edits()
-        call(['mv', self.current_video.name, self.out])
+        command = ['ffmpeg', '-i', self.current_video.name, '-c:v', 'libvpx',
+                   '-crf', '8', self.out]
+        call(command)
 
         for video in self.base_videos:
             os.remove(video)
