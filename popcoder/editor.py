@@ -4,10 +4,11 @@ from tempfile import NamedTemporaryFile
 
 class Editor:
 
-    def __init__(self, ffmpeg_path='ffmpeg'):
+    def __init__(self, ffmpeg_path='ffmpeg', verbose=False):
         self.ffmpeg_path = ffmpeg_path
+        self.verbose = verbose
 
-    def trim(self, video_name, out, start, duration, verbose=False):
+    def trim(self, video_name, out, start, duration):
         """
         Trims a clip to be duration starting at start
         @param video_name : name of the input video
@@ -17,12 +18,12 @@ class Editor:
         """
         command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
                    '-y', '-preset', 'veryslow', '-t', duration, out]
-        if verbose:
+        if self.verbose:
             print 'Trimming {0} into {1}'.format(video_name, out)
             print ' '.join(command)
         call(command)
 
-    def skip(self, video_name, out, start, duration, verbose=False):
+    def skip(self, video_name, out, start, duration):
         """
         Skips a section of the clip
         @param video_name : name of video input file
@@ -44,13 +45,13 @@ class Editor:
             '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
             out]
 
-        if verbose:
+        if self.verbose:
             print 'Skipping {0} into {1}'.format(video_name, out)
             print ' '.join(command)
 
         call(command)
 
-    def draw_video(self, underlay, overlay, out, x, y, verbose=False):
+    def draw_video(self, underlay, overlay, out, x, y):
         """
         Draws one video over another
         @param underlay : video file on bottom
@@ -74,7 +75,7 @@ class Editor:
                    '-pix_fmt', 'yuv422p',
                    '-filter_complex', cfilter, '-map', '[aout]', out]
 
-        if verbose:
+        if self.verbose:
             print 'Drawing video {0} on top of {1}'.format(underlay, overlay)
             print command
 
@@ -82,7 +83,7 @@ class Editor:
 
     def draw_text(self, video_name, out, start, end, x, y, text,
                   color='0xFFFFFF', show_background=0,
-                  background_color='0x000000', size=16, verbose=False):
+                  background_color='0x000000', size=16):
         """
         Draws text over a video
         @param video_name : name of video input file
@@ -114,7 +115,7 @@ class Editor:
                    '-map', '[aout]',
                    out]
 
-        if verbose:
+        if self.verbose:
             print 'Drawing text "{0}" onto {1} output as {2}'.format(
                 text,
                 video_name,
@@ -124,7 +125,7 @@ class Editor:
 
         call(command)
 
-    def scale_video(self, video_name, out, width, height, verbose=False):
+    def scale_video(self, video_name, out, width, height):
         # Lossless video codecs can't scale videos with uneven width
         width = int(width)
         if width % 2 != 0:
@@ -134,7 +135,7 @@ class Editor:
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
                    'veryslow', '-y', '-vf', scale, out]
 
-        if verbose:
+        if self.verbose:
             print 'scaling video {0} into {1} ... {2}:{3}'.format(
                 video_name,
                 out,

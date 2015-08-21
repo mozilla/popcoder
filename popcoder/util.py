@@ -22,4 +22,4 @@ def seconds_to_timecode(sec):
 
 
 def percent_to_px(percent, px):
-    return (float(px) / 100) * percent
+    return px / 100.0 * percent

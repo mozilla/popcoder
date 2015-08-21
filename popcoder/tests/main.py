@@ -1,6 +1,9 @@
 import json
+import os
 import sys
 
+# Hack!
+sys.path.insert(0, os.path.abspath('..'))
 from popcoder import process_json
 
 
