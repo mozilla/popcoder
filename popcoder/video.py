@@ -1,4 +1,5 @@
 import os
+import re
 import urllib
 
 from subprocess import call
@@ -20,19 +21,20 @@ class Video:
     parsing of the popcorn json blob and calling the editing functions in the
     correct order
     """
-    def __init__(self, data, out, background_color, size=(1280, 720)):
+    def __init__(self, data, out, background_color, size=(1280, 720),
+                 delete=False):
         """
         Constructor
         @param data : The popcorn editor project json blob
         """
-        self.DELETE_VIDEOS = True
+        self.delete = delete
 
         self.track_edits = []
         self.track_items = []
         self.track_videos = []
         self.current_video = NamedTemporaryFile(
             suffix='.avi',
-            delete=self.DELETE_VIDEOS
+            delete=self.delete
         )
         self.background_color = background_color
         self.size = size
@@ -48,7 +50,9 @@ class Video:
         self.draw_videos()
         self.draw_items()
         self.draw_edits()
-        call(['ffmpeg', '-i', self.current_video.name, self.out])
+        command = ['ffmpeg', '-i', self.current_video.name, '-c:v', 'libvpx',
+                   '-crf', '8', self.out]
+        call(command)
 
         for video in self.base_videos:
             os.remove(video)
@@ -58,9 +62,15 @@ class Video:
         for video in reversed(self.track_videos):
             overlay = NamedTemporaryFile(
                 suffix='.avi',
-                delete=self.DELETE_VIDEOS
+                delete=self.delete
             )
 
+            # Removes all white spaces and non alphanumeric chars from title
+            video.options['title'] = re.sub(
+                '[^\w\.]',
+                '',
+                video.options['title']
+            ) + '.webm'
             # Trim the video if it needs to be
             if (video.options['from'] != 0 or
                 video.options['end'] - video.options['from'] <
@@ -78,8 +88,9 @@ class Video:
             # Also scale the video down to size
             scaled_overlay = NamedTemporaryFile(
                 suffix='.avi',
-                delete=self.DELETE_VIDEOS
+                delete=self.delete
             )
+
             self.editor.scale_video(
                 overlay.name,
                 scaled_overlay.name,
@@ -88,7 +99,7 @@ class Video:
             )
             overlay.close()
 
-            out = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+            out = NamedTemporaryFile(suffix='.avi', delete=self.delete)
 
             self.overlay_videos(self.current_video.name, scaled_overlay.name,
                                 video.options, out.name)
@@ -98,10 +109,10 @@ class Video:
             i += 1
 
     def overlay_videos(self, underlay_video, overlay_video, options, out):
-        overlay1 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
-        overlay2 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
-        overlay3 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
-        overlay4 = NamedTemporaryFile(suffix='.avi', delete=self.DELETE_VIDEOS)
+        overlay1 = NamedTemporaryFile(suffix='.avi', delete=self.delete)
+        overlay2 = NamedTemporaryFile(suffix='.avi', delete=self.delete)
+        overlay3 = NamedTemporaryFile(suffix='.avi', delete=self.delete)
+        overlay4 = NamedTemporaryFile(suffix='.avi', delete=self.delete)
 
         self.editor.trim(
             underlay_video,
@@ -150,7 +161,7 @@ class Video:
     def draw_items(self):
         for item in self.track_items:
             item_file = NamedTemporaryFile(suffix='.avi',
-                                           delete=self.DELETE_VIDEOS)
+                                           delete=self.delete)
             if item.edit_type == 'text':
                 self.editor.draw_text(
                     self.current_video.name,
@@ -171,7 +182,7 @@ class Video:
     def draw_edits(self):
         for edit in self.track_edits:
             edit_file = NamedTemporaryFile(suffix='.avi',
-                                           delete=self.DELETE_VIDEOS)
+                                           delete=self.delete)
             if edit.edit_type == 'skip':
                 self.editor.skip(
                     self.current_video.name,
@@ -200,7 +211,14 @@ class Video:
         print 'Beginning pre-process...'
         for url, video in data['media'][0]['clipData'].iteritems():
             print 'Downloading {0} from {1}.'.format(video['title'], url)
-            video['title'] = video['title'].replace(' ', '-') + '.webm'
+
+            # Removes all white spaces and non alphanumeric chars from title
+            video['title'] = re.sub(
+                '[^\w\.]',
+                '',
+                video['title']
+            ) + '.webm'
+
             urllib.urlretrieve(url, video['title'])
             self.base_videos.append(video['title'])
             print 'video downloaded as %s!' % video['title']

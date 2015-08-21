@@ -1,0 +1,102 @@
+{
+    "template": "basic",
+    "author": "TODO",
+    "thumbnail": "http://localhost:8080/resources/icons/fb-logo.png",
+    "background": "#ff1212",
+    "data": {
+        "targets": [{
+            "id": "Target0",
+            "name": "video-container",
+            "element": "video-container"
+        }],
+        "media": [{
+            "id": "Media0",
+            "name": "Media0",
+            "url": "#t=,722.3322997307145",
+            "target": "video",
+            "duration": 722.3322997307145,
+            "popcornOptions": {
+                "frameAnimation": true
+            },
+            "controls": true,
+            "tracks": [{
+                "name": "",
+                "id": "0",
+                "order": 0,
+                "trackEvents": [{
+                    "id": "TrackEvent0",
+                    "type": "sequencer",
+                    "popcornOptions": {
+                        "start": 25.170560747663547,
+                        "source": ["https://d3fenhwk93s16g.cloudfront.net/o6u3y8/hd_webm.webm?butteruid=1439404465491"],
+                        "fallback": "",
+                        "denied": false,
+                        "end": 722.3322997307145,
+                        "from": 61.74126101694915,
+                        "title": "Mike Nolan: Going the Extra 10%: The Next Generation Video Editor on the Web",
+                        "type": "AirMozilla",
+                        "thumbnailSrc": "https://air.cdn.mozilla.net/media/cache/7f/76/7f767f5c065c8e36b711162c819f9492.png",
+                        "duration": 758.903,
+                        "linkback": "",
+                        "contentType": "",
+                        "hidden": false,
+                        "target": "video-container",
+                        "left": 0,
+                        "top": 0,
+                        "width": 100,
+                        "height": 100,
+                        "volume": 100,
+                        "mute": false,
+                        "zindex": 1000,
+                        "id": "TrackEvent0"
+                    },
+                    "track": "0",
+                    "name": "TrackEvent0"
+                }, {
+                    "id": "TrackEvent1",
+                    "type": "text",
+                    "popcornOptions": {
+                        "start": 0,
+                        "end": 25.170560747663547,
+                        "target": "video-container",
+                        "left": 2.111657146965089,
+                        "top": 49.902152641878665,
+                        "text": "Popcorn Maker",
+                        "linkUrl": "",
+                        "linkTarget": "_blank",
+                        "position": "custom",
+                        "alignment": "left",
+                        "transition": "popcorn-fade",
+                        "fontFamily": "Merriweather",
+                        "fontSize": 10,
+                        "fontColor": "#000000",
+                        "shadow": false,
+                        "shadowColor": "#444444",
+                        "background": false,
+                        "backgroundColor": "#888888",
+                        "fontDecorations": {
+                            "bold": false,
+                            "italics": false
+                        },
+                        "width": 49.97523186741239,
+                        "zindex": 1000,
+                        "id": "TrackEvent1"
+                    },
+                    "track": "0",
+                    "name": "TrackEvent1"
+                }]
+            }],
+            "clipData": {
+                "https://d3fenhwk93s16g.cloudfront.net/o6u3y8/hd_webm.webm": {
+                    "type": "AirMozilla",
+                    "title": "Mike Nolan: Going the Extra 10%: The Next Generation Video Editor on the Web",
+                    "source": "https://d3fenhwk93s16g.cloudfront.net/o6u3y8/hd_webm.webm",
+                    "thumbnail": "https://air.cdn.mozilla.net/media/cache/7f/76/7f767f5c065c8e36b711162c819f9492.png",
+                    "duration": 758.903
+                }
+            },
+            "currentTime": 0
+        }]
+    },
+    "tags": ["popcorn"]
+}

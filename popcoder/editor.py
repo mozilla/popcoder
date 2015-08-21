@@ -4,8 +4,9 @@ from tempfile import NamedTemporaryFile
 
 class Editor:
 
-    def __init__(self, ffmpeg_path='ffmpeg'):
+    def __init__(self, ffmpeg_path='ffmpeg', verbose=False):
         self.ffmpeg_path = ffmpeg_path
+        self.verbose = verbose
 
     def trim(self, video_name, out, start, duration):
         """
@@ -17,6 +18,9 @@ class Editor:
         """
         command = ['ffmpeg', '-ss', start, '-i', video_name, '-c:v', 'huffyuv',
                    '-y', '-preset', 'veryslow', '-t', duration, out]
+        if self.verbose:
+            print 'Trimming {0} into {1}'.format(video_name, out)
+            print ' '.join(command)
         call(command)
 
     def skip(self, video_name, out, start, duration):
@@ -35,11 +39,17 @@ class Editor:
             .format(start=start, offset=start + duration)\
             .replace(' ', '')
 
-        call(['ffmpeg', '-i', video_name,
-              '-filter_complex', cfilter, '-y',
-              '-map', '[outv]',
-              '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
-              out])
+        command = ['ffmpeg', '-i', video_name,
+            '-filter_complex', cfilter, '-y',
+            '-map', '[outv]',
+            '-map', '[outa]', '-c:v', 'huffyuv', '-preset', 'veryslow',
+            out]
+
+        if self.verbose:
+            print 'Skipping {0} into {1}'.format(video_name, out)
+            print ' '.join(command)
+
+        call(command)
 
     def draw_video(self, underlay, overlay, out, x, y):
         """
@@ -64,6 +74,10 @@ class Editor:
                    '-y',
                    '-pix_fmt', 'yuv422p',
                    '-filter_complex', cfilter, '-map', '[aout]', out]
+
+        if self.verbose:
+            print 'Drawing video {0} on top of {1}'.format(underlay, overlay)
+            print command
 
         call(command)
 
@@ -100,6 +114,15 @@ class Editor:
                    '-map', '[vout]',
                    '-map', '[aout]',
                    out]
+
+        if self.verbose:
+            print 'Drawing text "{0}" onto {1} output as {2}'.format(
+                text,
+                video_name,
+                out,
+            )
+            print ' '.join(command)
+
         call(command)
 
     def scale_video(self, video_name, out, width, height):
@@ -111,9 +134,20 @@ class Editor:
         scale = "scale={0}:{1}".format(width, height)
         command = ['ffmpeg', '-i', video_name, '-c:v', 'huffyuv', '-preset',
                    'veryslow', '-y', '-vf', scale, out]
+
+        if self.verbose:
+            print 'scaling video {0} into {1} ... {2}:{3}'.format(
+                video_name,
+                out,
+                width,
+                height
+            )
+            print ' '.join(command)
+
         call(command)
 
-    def draw_image(self, video_name, image_name, out, start, end, x, y):
+    def draw_image(self, video_name, image_name, out, start, end, x, y,
+                   verbose=False):
         """
         Draws an image over the video
         @param video_name : name of video input file
@@ -131,7 +165,8 @@ class Editor:
         call(['ffmpeg', '-i', video_name, '-i', image_name, '-c:v', 'huffyuv',
               '-y', '-preset', 'veryslow', '-filter_complex', cfilter, out])
 
-    def loop(self, video_name, out, start, duration, iterations, video_length):
+    def loop(self, video_name, out, start, duration, iterations, video_length,
+             verbose=False):
         """
         Loops a section of a video
         @param video_name : name of video input file

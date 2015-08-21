@@ -21,5 +21,5 @@ def seconds_to_timecode(sec):
     return strhours + ':' + strmin + ':' + strsec
 
 
-def percent_to_px(val, scale):
-    return (scale / 100) * val
+def percent_to_px(percent, px):
+    return px / 100.0 * percent
