@@ -14,6 +14,9 @@ python:
 # Hmm...???
 # https://github.com/phaux/node-ffmpeg-stream/blob/master/.travis.yml
 
+before_install:
+  - travis_retry pip install twine
+  
 script:
   - python setup.py test
 
